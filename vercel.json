@@ -3,26 +3,18 @@
   "buildCommand": "echo 'No build required for backend'",
   "outputDirectory": ".",
   "functions": {
-    "api/index.js": {
+    "api/organizations.js": {
       "maxDuration": 30
     }
   },
   "routes": [
     {
-      "src": "/health",
-      "dest": "/api/index.js"
+      "src": "/api/organizations",
+      "dest": "/api/organizations.js"
     },
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/webhooks/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "src": "/api/organizations/(.*)",
+      "dest": "/api/organizations.js"
     }
   ],
   "env": {
