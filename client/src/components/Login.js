@@ -26,7 +26,7 @@ function Login({ onLogin }) {
 
       // Check if user has a valid role
       const userRole = data.user.user_metadata?.role;
-      const validRoles = ['super_admin', 'admin', 'viewer', 'user'];
+      const validRoles = ['super_admin', 'org_admin', 'org_viewer', 'user'];
       if (!userRole || !validRoles.includes(userRole)) {
         setError('Access denied. Invalid user role.');
         await supabase.auth.signOut();

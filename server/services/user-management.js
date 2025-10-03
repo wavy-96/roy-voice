@@ -108,7 +108,7 @@ class UserManagementService {
       if (!role) throw new Error('Role is required');
       
       // Validate role
-      const validRoles = ['super_admin', 'admin', 'viewer', 'user'];
+      const validRoles = ['super_admin', 'org_admin', 'org_viewer', 'user'];
       if (!validRoles.includes(role)) {
         throw new Error(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
       }
@@ -202,7 +202,7 @@ class UserManagementService {
       const user_metadata = { ...currentUser.user_metadata };
 
       if (role !== undefined) {
-        const validRoles = ['super_admin', 'admin', 'viewer', 'user'];
+        const validRoles = ['super_admin', 'org_admin', 'org_viewer', 'user'];
         if (!validRoles.includes(role)) {
           throw new Error(`Invalid role. Must be one of: ${validRoles.join(', ')}`);
         }
