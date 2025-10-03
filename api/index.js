@@ -42,10 +42,12 @@ const corsOptions = {
     'https://localhost:3000',
     /^https:\/\/.*\.ngrok-free\.app$/,
     /^https:\/\/.*\.ngrok\.io$/,
-    /^https:\/\/.*\.vercel\.app$/
+    /^https:\/\/.*\.vercel\.app$/,
+    'https://client-omega-plum-94.vercel.app',
+    'https://client-16t3wbcmz-raymonds-projects-587cb143.vercel.app'
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-vercel-protection-bypass'],
   credentials: false, // Set to false since we're using Bearer tokens, not cookies
   optionsSuccessStatus: 200
 };
