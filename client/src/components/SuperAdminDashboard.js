@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useSupabase } from '../contexts/SupabaseContext';
 import UserManagement from './UserManagement';
 import AgentWizardModal from './AgentWizardModal';
+import OrganizationDetailView from './OrganizationDetailView';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 
@@ -15,6 +16,7 @@ function SuperAdminDashboard() {
   const [showCreateOrg, setShowCreateOrg] = useState(false);
   const [showAgentWizard, setShowAgentWizard] = useState(false);
   const [selectedOrgForAgent, setSelectedOrgForAgent] = useState(null);
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
   const [newOrg, setNewOrg] = useState({
     name: '',
     slug: '',
@@ -106,6 +108,15 @@ function SuperAdminDashboard() {
     setSelectedOrgForAgent(null);
   };
 
+  // Handle organization drill-down
+  const handleOrganizationClick = (organization) => {
+    setSelectedOrganization(organization);
+  };
+
+  const handleBackToOrganizations = () => {
+    setSelectedOrganization(null);
+  };
+
   useEffect(() => {
     fetchOrganizations();
   }, []);
@@ -135,6 +146,16 @@ function SuperAdminDashboard() {
           </button>
         </div>
       </div>
+    );
+  }
+
+  // Show organization detail view if an organization is selected
+  if (selectedOrganization) {
+    return (
+      <OrganizationDetailView
+        organization={selectedOrganization}
+        onBack={handleBackToOrganizations}
+      />
     );
   }
 
@@ -214,7 +235,12 @@ function SuperAdminDashboard() {
                   {organizations.map((org) => (
                     <tr key={org.id}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {org.name}
+                        <button
+                          onClick={() => handleOrganizationClick(org)}
+                          className="text-blue-600 hover:text-blue-900 hover:underline"
+                        >
+                          {org.name}
+                        </button>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {org.slug}
