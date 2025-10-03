@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useSupabase } from '../contexts/SupabaseContext';
 import UserManagement from './UserManagement';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 
 function SuperAdminDashboard() {
+  const supabase = useSupabase();
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,15 +21,23 @@ function SuperAdminDashboard() {
     billing_rate_per_minute: 0.04
   });
 
+  // Get auth headers
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('No active session');
+    
+    return {
+      'Authorization': `Bearer ${session.access_token}`,
+      'ngrok-skip-browser-warning': 'true'
+    };
+  };
+
   // Fetch organizations
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/organizations`, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
-      });
+      const headers = await getAuthHeaders();
+      const response = await axios.get(`${API_BASE_URL}/api/organizations`, { headers });
       setOrganizations(response.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to fetch organizations');
@@ -40,11 +50,8 @@ function SuperAdminDashboard() {
   const createOrganization = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/organizations`, newOrg, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
-      });
+      const headers = await getAuthHeaders();
+      const response = await axios.post(`${API_BASE_URL}/api/organizations`, newOrg, { headers });
       setOrganizations([...organizations, response.data]);
       setShowCreateOrg(false);
       setNewOrg({
@@ -67,11 +74,8 @@ function SuperAdminDashboard() {
     }
     
     try {
-      await axios.delete(`${API_BASE_URL}/api/organizations/${id}`, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
-      });
+      const headers = await getAuthHeaders();
+      await axios.delete(`${API_BASE_URL}/api/organizations/${id}`, { headers });
       setOrganizations(organizations.filter(org => org.id !== id));
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete organization');
