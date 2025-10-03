@@ -43,8 +43,15 @@ function SuperAdminDashboard() {
       setLoading(true);
       console.log('🔍 Fetching organizations...');
       const headers = await getAuthHeaders();
-      console.log('📡 Making API call to:', `${API_BASE_URL}/api/organizations`);
-      const response = await axios.get(`${API_BASE_URL}/api/organizations`, { headers });
+      
+      // Add Vercel bypass token if available
+      const bypassToken = process.env.REACT_APP_VERCEL_BYPASS_TOKEN;
+      const url = bypassToken 
+        ? `${API_BASE_URL}/api/organizations?x-vercel-protection-bypass=${bypassToken}`
+        : `${API_BASE_URL}/api/organizations`;
+      
+      console.log('📡 Making API call to:', url);
+      const response = await axios.get(url, { headers });
       console.log('✅ Organizations fetched:', response.data);
       setOrganizations(response.data);
     } catch (err) {
@@ -61,7 +68,14 @@ function SuperAdminDashboard() {
     e.preventDefault();
     try {
       const headers = await getAuthHeaders();
-      const response = await axios.post(`${API_BASE_URL}/api/organizations`, newOrg, { headers });
+      
+      // Add Vercel bypass token if available
+      const bypassToken = process.env.REACT_APP_VERCEL_BYPASS_TOKEN;
+      const url = bypassToken 
+        ? `${API_BASE_URL}/api/organizations?x-vercel-protection-bypass=${bypassToken}`
+        : `${API_BASE_URL}/api/organizations`;
+      
+      const response = await axios.post(url, newOrg, { headers });
       setOrganizations([...organizations, response.data]);
       setShowCreateOrg(false);
       setNewOrg({
@@ -85,7 +99,14 @@ function SuperAdminDashboard() {
     
     try {
       const headers = await getAuthHeaders();
-      await axios.delete(`${API_BASE_URL}/api/organizations/${id}`, { headers });
+      
+      // Add Vercel bypass token if available
+      const bypassToken = process.env.REACT_APP_VERCEL_BYPASS_TOKEN;
+      const url = bypassToken 
+        ? `${API_BASE_URL}/api/organizations/${id}?x-vercel-protection-bypass=${bypassToken}`
+        : `${API_BASE_URL}/api/organizations/${id}`;
+      
+      await axios.delete(url, { headers });
       setOrganizations(organizations.filter(org => org.id !== id));
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete organization');
