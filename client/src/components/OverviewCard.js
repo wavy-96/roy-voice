@@ -1,6 +1,6 @@
 import React from 'react';
 
-const OverviewCard = ({ overview, formatDuration }) => {
+const OverviewCard = ({ overview, formatDuration, formatDurationMinutes }) => {
   // Add null checks
   if (!overview) {
     return (
@@ -34,13 +34,13 @@ const OverviewCard = ({ overview, formatDuration }) => {
     {
       title: 'Avg Duration',
       value: formatDuration(overview.avg_duration_seconds || 0),
-      subtitle: `${overview.avg_billed_minutes?.toFixed(2) || 0} min avg`,
+      subtitle: `${formatDurationMinutes(overview.avg_duration_seconds || 0)} min avg`,
       icon: '⏱️',
       color: 'purple'
     },
     {
       title: 'Total Minutes',
-      value: `${overview.total_billed_minutes?.toFixed(2) || 0}`,
+      value: `${overview.total_billed_minutes?.toFixed(1) || 0}`,
       subtitle: overview.expected_revenue !== undefined 
         ? `$${overview.expected_revenue.toFixed(2)} revenue`
         : null,

@@ -88,8 +88,13 @@ function OrganizationDashboard({ user }) {
   const formatDuration = (seconds) => {
     if (!seconds) return '0:00';
     const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
+  const formatDurationMinutes = (seconds) => {
+    if (!seconds) return '0.00';
+    return (seconds / 60).toFixed(2);
   };
 
   const formatPhoneNumber = (phoneNumber) => {
@@ -160,6 +165,7 @@ function OrganizationDashboard({ user }) {
             <OverviewCard 
               overview={overview}
               formatDuration={formatDuration}
+              formatDurationMinutes={formatDurationMinutes}
             />
           </div>
         )}
