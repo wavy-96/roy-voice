@@ -255,20 +255,7 @@ function SuperAdminDashboard() {
                         {new Date(org.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex space-x-3">
-                          <button
-                            onClick={() => handleCreateAgent(org)}
-                            className="text-blue-600 hover:text-blue-900"
-                          >
-                            Create Agent
-                          </button>
-                          <button
-                            onClick={() => deleteOrganization(org.id)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        <span className="text-gray-400 text-sm">Click organization name to manage</span>
                       </td>
                     </tr>
                   ))}

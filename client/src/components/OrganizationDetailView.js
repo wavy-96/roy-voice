@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useSupabase } from '../contexts/SupabaseContext';
 import AgentWizardModal from './AgentWizardModal';
 import AgentDetailView from './AgentDetailView';
+import UserModal from './UserModal';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 
@@ -21,6 +22,10 @@ function OrganizationDetailView({ organization, onBack }) {
   // Modal states
   const [showAgentWizard, setShowAgentWizard] = useState(false);
   const [showAgentDetail, setShowAgentDetail] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showUserModal, setShowUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [deleteUserConfirm, setDeleteUserConfirm] = useState(null);
 
   // Get auth headers
   const getAuthHeaders = async () => {
@@ -132,6 +137,71 @@ function OrganizationDetailView({ organization, onBack }) {
   const handleAgentDetailClose = () => {
     setShowAgentDetail(false);
     setSelectedAgent(null);
+  };
+
+  // Handle organization deletion
+  const handleDeleteOrganization = async () => {
+    try {
+      const headers = await getAuthHeaders();
+      await axios.delete(`${API_BASE_URL}/api/organizations/${organization.id}`, { headers });
+      setShowDeleteConfirm(false);
+      onBack(); // Go back to organizations list
+    } catch (err) {
+      console.error('Error deleting organization:', err);
+      setError(err.response?.data?.error || 'Failed to delete organization');
+    }
+  };
+
+  // Handle user management
+  const handleCreateUser = () => {
+    setEditingUser(null);
+    setShowUserModal(true);
+  };
+
+  const handleEditUser = (user) => {
+    setEditingUser(user);
+    setShowUserModal(true);
+  };
+
+  const handleSaveUser = async (userData) => {
+    try {
+      const headers = await getAuthHeaders();
+      
+      if (editingUser) {
+        // Update existing user
+        await axios.put(
+          `${API_BASE_URL}/api/users/${editingUser.id}`,
+          userData,
+          { headers }
+        );
+      } else {
+        // Create new user
+        await axios.post(
+          `${API_BASE_URL}/api/users`,
+          { ...userData, organization_id: organization.id },
+          { headers }
+        );
+      }
+
+      setShowUserModal(false);
+      setEditingUser(null);
+      await fetchUsers(); // Refresh users list
+    } catch (err) {
+      console.error('Error saving user:', err);
+      throw new Error(err.response?.data?.error || 'Failed to save user');
+    }
+  };
+
+  const handleDeleteUser = async (userId) => {
+    try {
+      const headers = await getAuthHeaders();
+      await axios.delete(`${API_BASE_URL}/api/users/${userId}`, { headers });
+      setDeleteUserConfirm(null);
+      await fetchUsers(); // Refresh users list
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setError(err.response?.data?.error || 'Failed to delete user');
+    }
   };
 
   // Format duration helper
@@ -389,11 +459,22 @@ function OrganizationDetailView({ organization, onBack }) {
 
   const renderUsersTab = () => (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900">Users</h3>
-        <p className="text-sm text-gray-500">
-          Manage users for {organization.name}
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h3 className="text-lg font-medium text-gray-900">Users</h3>
+          <p className="text-sm text-gray-500">
+            Manage users for {organization.name}
+          </p>
+        </div>
+        <button
+          onClick={handleCreateUser}
+          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Create User
+        </button>
       </div>
 
       <div className="bg-white shadow rounded-lg overflow-hidden">
@@ -401,7 +482,13 @@ function OrganizationDetailView({ organization, onBack }) {
           <div className="p-8 text-center">
             <div className="text-4xl mb-4">👥</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No users yet</h3>
-            <p className="text-gray-500">Users will appear here once they're created</p>
+            <p className="text-gray-500 mb-4">Create your first user for this organization</p>
+            <button
+              onClick={handleCreateUser}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
+            >
+              Create User
+            </button>
           </div>
         ) : (
           <table className="min-w-full divide-y divide-gray-200">
@@ -415,6 +502,9 @@ function OrganizationDetailView({ organization, onBack }) {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Last Sign In
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -455,6 +545,22 @@ function OrganizationDetailView({ organization, onBack }) {
                     {user.last_sign_in_at 
                       ? new Date(user.last_sign_in_at).toLocaleDateString()
                       : 'Never'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end space-x-3">
+                      <button
+                        onClick={() => handleEditUser(user)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => setDeleteUserConfirm(user)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -514,6 +620,27 @@ function OrganizationDetailView({ organization, onBack }) {
                 </dd>
               </div>
             </dl>
+          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <h4 className="text-md font-medium text-red-900 mb-4">Danger Zone</h4>
+          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h5 className="text-sm font-medium text-red-800">Delete Organization</h5>
+                <p className="text-sm text-red-700 mt-1">
+                  Permanently delete this organization and all its data. This action cannot be undone.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 text-sm font-medium"
+              >
+                Delete Organization
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -591,6 +718,100 @@ function OrganizationDetailView({ organization, onBack }) {
             organization={organization}
             onClose={handleAgentDetailClose}
           />
+        )}
+
+        {/* User Management Modal */}
+        {showUserModal && (
+          <UserModal
+            user={editingUser}
+            organizations={[organization]} // Only show current organization
+            onSave={handleSaveUser}
+            onClose={() => {
+              setShowUserModal(false);
+              setEditingUser(null);
+            }}
+          />
+        )}
+
+        {/* Delete User Confirmation Modal */}
+        {deleteUserConfirm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">Delete User</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to delete <strong>{deleteUserConfirm.email}</strong>?
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div className="items-center px-4 py-3">
+                  <button
+                    onClick={() => handleDeleteUser(deleteUserConfirm.id)}
+                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setDeleteUserConfirm(null)}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirm && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="mt-3 text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                  <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </div>
+                <h3 className="text-lg leading-6 font-medium text-gray-900 mt-4">Delete Organization</h3>
+                <div className="mt-2 px-7 py-3">
+                  <p className="text-sm text-gray-500">
+                    Are you sure you want to delete <strong>{organization.name}</strong>?
+                    This will permanently delete the organization and all its data including:
+                  </p>
+                  <ul className="text-sm text-gray-500 mt-2 text-left list-disc list-inside">
+                    <li>All agents and their configurations</li>
+                    <li>All call data and analytics</li>
+                    <li>All users and their access</li>
+                    <li>All billing and revenue data</li>
+                  </ul>
+                  <p className="text-sm text-red-600 mt-2 font-medium">
+                    This action cannot be undone.
+                  </p>
+                </div>
+                <div className="items-center px-4 py-3">
+                  <button
+                    onClick={handleDeleteOrganization}
+                    className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-24 mr-2 hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-24 hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
