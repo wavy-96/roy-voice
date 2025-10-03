@@ -37,15 +37,29 @@ app.use(helmet());
 
 // CORS configuration
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://localhost:3000',
-    /^https:\/\/.*\.ngrok-free\.app$/,
-    /^https:\/\/.*\.ngrok\.io$/,
-    /^https:\/\/.*\.vercel\.app$/,
-    'https://client-omega-plum-94.vercel.app',
-    'https://client-16t3wbcmz-raymonds-projects-587cb143.vercel.app'
-  ],
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow localhost for development
+    if (origin.includes('localhost')) return callback(null, true);
+    
+    // Allow all Vercel domains
+    if (origin.includes('.vercel.app')) return callback(null, true);
+    
+    // Allow ngrok domains
+    if (origin.includes('.ngrok.io') || origin.includes('.ngrok-free.app')) return callback(null, true);
+    
+    // Allow specific domains
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'https://localhost:3000'
+    ];
+    
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    
+    callback(new Error('Not allowed by CORS'));
+  },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-vercel-protection-bypass'],
   credentials: false, // Set to false since we're using Bearer tokens, not cookies
