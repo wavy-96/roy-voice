@@ -9,10 +9,10 @@ Sentry.init({
   
   // Capture unhandled promise rejections
   integrations: [
-    new Sentry.Integrations.OnUncaughtException({
+    Sentry.onUncaughtExceptionIntegration({
       exitEvenIfOtherHandlersAreRegistered: false,
     }),
-    new Sentry.Integrations.OnUnhandledRejection({
+    Sentry.onUnhandledRejectionIntegration({
       mode: 'warn',
     }),
   ],

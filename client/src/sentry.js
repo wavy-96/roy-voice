@@ -9,7 +9,7 @@ Sentry.init({
   
   // Capture unhandled promise rejections
   integrations: [
-    new Sentry.Integrations.Breadcrumbs({
+    Sentry.breadcrumbsIntegration({
       console: true,
       dom: true,
       fetch: true,
