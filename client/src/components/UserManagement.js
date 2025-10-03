@@ -117,12 +117,14 @@ function UserManagement() {
     switch (role) {
       case 'super_admin':
         return 'bg-purple-100 text-purple-800';
-      case 'admin':
+      case 'org_admin':
         return 'bg-blue-100 text-blue-800';
-      case 'viewer':
+      case 'org_viewer':
         return 'bg-gray-100 text-gray-800';
-      default:
+      case 'user':
         return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -217,8 +219,9 @@ function UserManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleBadgeColor(user.role)}`}>
                       {user.role === 'super_admin' ? 'Super Admin' : 
-                       user.role === 'admin' ? 'Admin' :
-                       user.role === 'viewer' ? 'Viewer' : 'User'}
+                       user.role === 'org_admin' ? 'Org Admin' :
+                       user.role === 'org_viewer' ? 'Org Viewer' : 
+                       user.role === 'user' ? 'User' : user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

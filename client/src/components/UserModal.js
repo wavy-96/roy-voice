@@ -6,7 +6,7 @@ function UserModal({ user, organizations, onSave, onClose }) {
     password: '',
     first_name: '',
     last_name: '',
-    role: 'admin',
+    role: 'org_admin',
     organization_id: ''
   });
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,7 @@ function UserModal({ user, organizations, onSave, onClose }) {
         password: '', // Don't populate password for security
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        role: user.role || 'admin',
+        role: user.role || 'org_admin',
         organization_id: user.organization_id || ''
       });
     }
@@ -159,13 +159,13 @@ function UserModal({ user, organizations, onSave, onClose }) {
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
             >
-              <option value="admin">Admin</option>
-              <option value="viewer">Viewer</option>
+              <option value="org_admin">Org Admin</option>
+              <option value="org_viewer">Org Viewer</option>
               <option value="user">User</option>
               <option value="super_admin">Super Admin</option>
             </select>
             <p className="mt-1 text-sm text-gray-500">
-              Admin: Full access to organization data | Viewer: Read-only access | Super Admin: System-wide access
+              Org Admin: Full access to organization data | Org Viewer: Read-only access | Super Admin: System-wide access
             </p>
           </div>
 
