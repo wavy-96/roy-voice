@@ -1,26 +1,26 @@
 {
   "version": 2,
   "functions": {
-    "server/index.js": {
+    "api/index.js": {
       "maxDuration": 30
     }
   },
   "routes": [
     {
       "src": "/health",
-      "dest": "/server/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/webhooks/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/server/index.js"
+      "dest": "/api/index.js"
     }
   ],
   "env": {
