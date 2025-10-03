@@ -3,8 +3,14 @@
   "buildCommand": "echo 'No build required for backend'",
   "outputDirectory": ".",
   "functions": {
-    "api/**/*.js": {
+    "api/index.js": {
       "maxDuration": 30
     }
-  }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    }
+  ]
 }

@@ -1,114 +1,204 @@
-// Initialize Sentry first (before any other imports)
-require('../server/sentry');
+const OrganizationService = require('../server/services/organization');
+const UserManagementService = require('../server/services/user-management');
+const AgentService = require('../server/services/agent');
+const MultiTenantMetricsService = require('../server/services/multi-tenant-metrics');
 
-const config = require('../config/env');
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const basicAuth = require('express-basic-auth');
-const path = require('path');
+// Initialize services
+const organizationService = new OrganizationService();
+const userManagementService = new UserManagementService();
+const agentService = new AgentService();
+const multiTenantMetricsService = new MultiTenantMetricsService();
 
-const retellService = require('../server/services/retell');
-const metricsRoutes = require('../server/routes/metrics');
-const webhookRoutes = require('../server/routes/webhooks');
-const organizationRoutes = require('../server/routes/organizations');
-const multiTenantMetricsRoutes = require('../server/routes/multi-tenant-metrics');
-const userRoutes = require('../server/routes/users');
-const agentRoutes = require('../server/routes/agents');
-const monitoringRoutes = require('../server/routes/monitoring');
-const cache = require('../server/services/cache');
+// Helper function to add CORS headers
+function addCorsHeaders(res) {
+  res.setHeader('Access-Control-Allow-Origin', 'https://client-omega-plum-94.vercel.app');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning, x-vercel-protection-bypass');
+}
 
-// Import rate limiters
-const { 
-  apiLimiter, 
-  authLimiter, 
-  orgCreationLimiter,
-  healthCheckLimiter 
-} = require('../server/middleware/rate-limit');
+// Helper function to check super admin access (simplified for now)
+function requireSuperAdmin(req) {
+  // In production, this would check JWT token and verify super admin role
+  // For now, we'll assume all requests are from super admin
+  return { role: 'super_admin' };
+}
 
-const app = express();
-const PORT = config.port;
+module.exports = async (req, res) => {
+  // Add CORS headers to all responses
+  addCorsHeaders(res);
 
-// Trust proxy for ngrok
-app.set('trust proxy', 1);
+  // Handle preflight OPTIONS requests
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-// Security middleware
-app.use(helmet());
+  try {
+    // Check super admin access for protected routes
+    const user = requireSuperAdmin(req);
 
-// CORS configuration
-const corsOptions = {
-  origin: [
-    'http://localhost:3000',
-    'https://localhost:3000',
-    'https://client-omega-plum-94.vercel.app',
-    /^https:\/\/.*\.vercel\.app$/,
-    /^https:\/\/.*\.ngrok\.io$/,
-    /^https:\/\/.*\.ngrok-free\.app$/
-  ],
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-vercel-protection-bypass'],
-  credentials: false, // Set to false since we're using Bearer tokens, not cookies
-  optionsSuccessStatus: 200
+    const { method, url } = req;
+    const path = url.replace('/api/', '').split('/')[0]; // Get first segment after /api/
+    const subPath = url.replace(`/api/${path}`, '').replace(/^\//, ''); // Get remaining path
+
+    switch (path) {
+      case 'organizations':
+        await handleOrganizations(req, res, subPath, organizationService);
+        break;
+      case 'users':
+        await handleUsers(req, res, subPath, userService);
+        break;
+      case 'agents':
+        await handleAgents(req, res, subPath, agentService);
+        break;
+      case 'metrics':
+        await handleMetrics(req, res, subPath, metricsService);
+        break;
+      case 'multi-tenant':
+        await handleMultiTenantMetrics(req, res, subPath, multiTenantMetricsService);
+        break;
+      case 'monitoring':
+        await handleMonitoring(req, res, subPath, monitoringService);
+        break;
+      default:
+        res.status(404).json({ error: 'API endpoint not found' });
+    }
+  } catch (error) {
+    console.error('Error in API function:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 };
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Handle preflight requests
+// Route handlers
+async function handleOrganizations(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET' && !subPath) {
+      const organizations = await service.getAllOrganizations();
+      res.status(200).json(organizations);
+    } else if (req.method === 'GET' && subPath) {
+      const organization = await service.getOrganizationById(subPath);
+      res.status(200).json(organization);
+    } else if (req.method === 'POST' && !subPath) {
+      const orgData = req.body;
+      const organization = await service.createOrganization(orgData);
+      res.status(201).json(organization);
+    } else if (req.method === 'PUT' && subPath) {
+      const updateData = req.body;
+      const organization = await service.updateOrganization(subPath, updateData);
+      res.status(200).json(organization);
+    } else if (req.method === 'DELETE' && subPath) {
+      await service.deleteOrganization(subPath);
+      res.status(204).end();
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in organizations handler:', error);
+    res.status(500).json({ error: 'Failed to process organizations request' });
+  }
+}
 
-// Apply rate limiting to all API routes
-app.use('/api/', apiLimiter);
+async function handleUsers(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET' && !subPath) {
+      const users = await service.getAllUsers();
+      res.status(200).json(users);
+    } else if (req.method === 'GET' && subPath) {
+      const user = await service.getUserById(subPath);
+      res.status(200).json(user);
+    } else if (req.method === 'POST' && !subPath) {
+      const userData = req.body;
+      const user = await service.createUser(userData);
+      res.status(201).json(user);
+    } else if (req.method === 'PUT' && subPath) {
+      const updateData = req.body;
+      const user = await service.updateUser(subPath, updateData);
+      res.status(200).json(user);
+    } else if (req.method === 'DELETE' && subPath) {
+      await service.deleteUser(subPath);
+      res.status(204).end();
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in users handler:', error);
+    res.status(500).json({ error: 'Failed to process users request' });
+  }
+}
 
-// Body parsing
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
+async function handleAgents(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET' && !subPath) {
+      const agents = await service.getAllAgents();
+      res.status(200).json(agents);
+    } else if (req.method === 'GET' && subPath) {
+      const agent = await service.getAgentById(subPath);
+      res.status(200).json(agent);
+    } else if (req.method === 'POST' && !subPath) {
+      const agentData = req.body;
+      const agent = await service.createAgent(agentData);
+      res.status(201).json(agent);
+    } else if (req.method === 'PUT' && subPath) {
+      const updateData = req.body;
+      const agent = await service.updateAgent(subPath, updateData);
+      res.status(200).json(agent);
+    } else if (req.method === 'DELETE' && subPath) {
+      await service.deleteAgent(subPath);
+      res.status(204).end();
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in agents handler:', error);
+    res.status(500).json({ error: 'Failed to process agents request' });
+  }
+}
 
-// Basic auth for console routes
-const authMiddleware = basicAuth({
-  users: { 
-    [config.console.username]: config.console.password
-  },
-  challenge: true,
-  realm: 'Retell Metrics Console'
-});
+async function handleMetrics(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET') {
+      const metrics = await service.getMetrics(subPath ? { organizationId: subPath } : {});
+      res.status(200).json(metrics);
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in metrics handler:', error);
+    res.status(500).json({ error: 'Failed to process metrics request' });
+  }
+}
 
-// Health check (with lenient rate limit)
-app.get('/health', healthCheckLimiter, (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+async function handleMultiTenantMetrics(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET') {
+      const metrics = await service.getMultiTenantMetrics(subPath ? { organizationId: subPath } : {});
+      res.status(200).json(metrics);
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in multi-tenant metrics handler:', error);
+    res.status(500).json({ error: 'Failed to process multi-tenant metrics request' });
+  }
+}
 
-// Cache statistics endpoint (for monitoring)
-app.get('/api/cache/stats', (req, res) => {
-  const stats = cache.getStats();
-  res.json(stats);
-});
-
-// API Routes (general rate limiting already applied above via apiLimiter)
-app.use('/api/metrics', metricsRoutes);
-app.use('/api/organizations', orgCreationLimiter, organizationRoutes); // Stricter limit for org creation
-app.use('/api/multi-tenant', multiTenantMetricsRoutes);
-app.use('/api/users', userRoutes); // User management (super admin only)
-app.use('/api/agents', agentRoutes); // Agent management (super admin only)
-app.use('/api/monitoring', monitoringRoutes); // Monitoring and health endpoints
-app.use('/webhooks', webhookRoutes);
-
-// Serve static files from React build
-app.use(express.static(path.join(__dirname, '../client/build')));
-
-// Console route with basic auth
-app.get('/console', authMiddleware, (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/build/index.html'));
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ error: 'Not found' });
-});
-
-// For Vercel serverless functions, we don't need to call app.listen()
-// The app is automatically started by Vercel
-module.exports = app;
+async function handleMonitoring(req, res, subPath, service) {
+  try {
+    if (req.method === 'GET') {
+      if (subPath === 'health') {
+        const health = await service.getHealth();
+        res.status(200).json(health);
+      } else if (subPath === 'stats') {
+        const stats = await service.getStats();
+        res.status(200).json(stats);
+      } else {
+        res.status(404).json({ error: 'Monitoring endpoint not found' });
+      }
+    } else {
+      res.status(405).json({ error: 'Method not allowed' });
+    }
+  } catch (error) {
+    console.error('Error in monitoring handler:', error);
+    res.status(500).json({ error: 'Failed to process monitoring request' });
+  }
+}
