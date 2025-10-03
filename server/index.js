@@ -45,7 +45,7 @@ const corsOptions = {
     /^https:\/\/.*\.vercel\.app$/
   ],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning', 'x-vercel-protection-bypass'],
   credentials: false, // Set to false since we're using Bearer tokens, not cookies
   optionsSuccessStatus: 200
 };
