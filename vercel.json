@@ -1,17 +1,12 @@
 {
   "version": 2,
-  "buildCommand": "echo 'No build required for backend'",
-  "outputDirectory": ".",
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30
-    }
-  },
-  "routes": [
+  "builds": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
     {
       "src": "/(.*)",
       "dest": "/api/index.js"

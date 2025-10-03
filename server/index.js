@@ -108,9 +108,12 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Console available at: http://localhost:${PORT}/console`);
-});
+// Only start the server if not in serverless environment
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Console available at: http://localhost:${PORT}/console`);
+  });
+}
 
 module.exports = app;
