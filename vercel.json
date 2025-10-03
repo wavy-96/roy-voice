@@ -3,18 +3,18 @@
   "buildCommand": "echo 'No build required for backend'",
   "outputDirectory": ".",
   "functions": {
-    "api/index.mjs": {
+    "api/index.js": {
       "maxDuration": 30
     }
   },
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.mjs"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.mjs"
+      "dest": "/api/index.js"
     }
   ]
 }
