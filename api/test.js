@@ -1,4 +1,4 @@
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   // Add CORS headers
   res.setHeader('Access-Control-Allow-Origin', 'https://client-b1j3c6ydc-raymonds-projects-587cb143.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
@@ -9,5 +9,10 @@ module.exports = (req, res) => {
     return;
   }
   
-  res.json({ message: 'Hello from Vercel serverless function!', method: req.method });
+  res.status(200).json({ 
+    message: 'Hello from Vercel serverless function!', 
+    method: req.method,
+    url: req.url,
+    timestamp: new Date().toISOString()
+  });
 };
