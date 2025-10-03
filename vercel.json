@@ -1,36 +1,26 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "includeFiles": [
-          "config/**",
-          "server/services/**",
-          "server/routes/**",
-          "server/middleware/**"
-        ]
-      }
+  "functions": {
+    "server/index.js": {
+      "maxDuration": 30
     }
-  ],
+  },
   "routes": [
     {
       "src": "/health",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     },
     {
       "src": "/webhooks/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     }
   ],
   "env": {
