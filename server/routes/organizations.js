@@ -20,9 +20,22 @@ const requireSuperAdmin = (req, res, next) => {
 // Apply super admin middleware to all routes
 router.use(requireSuperAdmin);
 
+// Handle OPTIONS requests for CORS preflight
+router.options('/', (req, res) => {
+  res.header('Access-Control-Allow-Origin', 'https://client-omega-plum-94.vercel.app');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning, x-vercel-protection-bypass');
+  res.sendStatus(200);
+});
+
 // Get all organizations
 router.get('/', async (req, res) => {
   try {
+    // Add explicit CORS headers
+    res.header('Access-Control-Allow-Origin', 'https://client-omega-plum-94.vercel.app');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning, x-vercel-protection-bypass');
+    
     const organizations = await organizationService.getAllOrganizations();
     res.json(organizations);
   } catch (error) {
