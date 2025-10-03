@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useSupabase } from '../contexts/SupabaseContext';
 import UserManagement from './UserManagement';
+import AgentWizardModal from './AgentWizardModal';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3002';
 
@@ -12,6 +13,8 @@ function SuperAdminDashboard() {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('organizations');
   const [showCreateOrg, setShowCreateOrg] = useState(false);
+  const [showAgentWizard, setShowAgentWizard] = useState(false);
+  const [selectedOrgForAgent, setSelectedOrgForAgent] = useState(null);
   const [newOrg, setNewOrg] = useState({
     name: '',
     slug: '',
@@ -82,9 +85,21 @@ function SuperAdminDashboard() {
     }
   };
 
-  useEffect(() => {
+  // Handle agent creation
+  const handleCreateAgent = (organization) => {
+    setSelectedOrgForAgent(organization);
+    setShowAgentWizard(true);
+  };
+
+  const handleAgentWizardSuccess = () => {
+    // Refresh organizations to show updated agent count
     fetchOrganizations();
-  }, []);
+  };
+
+  const handleAgentWizardClose = () => {
+    setShowAgentWizard(false);
+    setSelectedOrgForAgent(null);
+  };
 
   if (loading) {
     return (
@@ -205,12 +220,20 @@ function SuperAdminDashboard() {
                         {new Date(org.created_at).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button
-                          onClick={() => deleteOrganization(org.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          Delete
-                        </button>
+                        <div className="flex space-x-3">
+                          <button
+                            onClick={() => handleCreateAgent(org)}
+                            className="text-blue-600 hover:text-blue-900"
+                          >
+                            Create Agent
+                          </button>
+                          <button
+                            onClick={() => deleteOrganization(org.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -398,6 +421,15 @@ function SuperAdminDashboard() {
         {/* Users Tab */}
         {activeTab === 'users' && (
           <UserManagement />
+        )}
+
+        {/* Agent Wizard Modal */}
+        {showAgentWizard && selectedOrgForAgent && (
+          <AgentWizardModal
+            organization={selectedOrgForAgent}
+            onClose={handleAgentWizardClose}
+            onSuccess={handleAgentWizardSuccess}
+          />
         )}
 
         {/* Billing Tab */}
