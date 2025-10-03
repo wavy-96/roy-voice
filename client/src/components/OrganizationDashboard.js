@@ -142,7 +142,7 @@ function OrganizationDashboard({ user }) {
             Monitor your voice agent performance and call analytics
           </p>
           <p className="mt-1 text-sm text-gray-500">
-            Organization: {user.user_metadata?.organization_id ? 'TheCreativeHorse' : 'Unknown'}
+            Organization: {user.user_metadata?.organization_name || 'Unknown'}
           </p>
         </div>
 
