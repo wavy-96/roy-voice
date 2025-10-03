@@ -3,7 +3,6 @@ import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import Login from './components/Login';
 import SuperAdminDashboard from './components/SuperAdminDashboard';
 import OrganizationDashboard from './components/OrganizationDashboard';
-import SimpleApp from './SimpleApp';
 import ErrorBoundary from './components/ErrorBoundary';
 import ApiErrorBoundary from './components/ApiErrorBoundary';
 
@@ -168,7 +167,38 @@ function AppContent() {
       {/* Main Content */}
       <main className={user ? 'pt-0' : ''}>
         {supabaseError ? (
-          <SimpleApp />
+          <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 text-center">
+              <div>
+                <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+                  Configuration Error
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">
+                  Unable to connect to Supabase
+                </p>
+              </div>
+              <div className="rounded-md bg-red-50 p-4">
+                <div className="flex">
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      {supabaseError}
+                    </h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>Please check your environment variables:</p>
+                      <ul className="list-disc list-inside mt-2">
+                        <li>REACT_APP_SUPABASE_URL</li>
+                        <li>REACT_APP_SUPABASE_ANON_KEY</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="text-xs text-gray-500">
+                <p>For local development, create a .env file with the required variables.</p>
+                <p className="mt-1">For production, set environment variables in Vercel dashboard.</p>
+              </div>
+            </div>
+          </div>
         ) : (
           <>
             {view === 'login' && (
