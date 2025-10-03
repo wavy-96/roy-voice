@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Sentry from '@sentry/react';
 
 /**
  * API Error Boundary Component
@@ -23,15 +24,20 @@ class ApiErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error('API Error Boundary caught an error:', error, errorInfo);
     
+    // Send error to Sentry
+    Sentry.withScope((scope) => {
+      scope.setTag('errorBoundary', 'ApiErrorBoundary');
+      scope.setLevel('error');
+      scope.setContext('errorInfo', errorInfo);
+      scope.setContext('retryCount', this.state.retryCount);
+      scope.setContext('errorType', this.getErrorType(error));
+      Sentry.captureException(error);
+    });
+    
     this.setState({
       error,
       errorInfo
     });
-
-    // Log to error service in production
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to error reporting service
-    }
   }
 
   handleRetry = async () => {

@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // General API rate limit - protects all API endpoints
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10000, // TESTING: Increased from 100 to 10000 for testing
+  max: 1000, // PRODUCTION: Reduced from 10000 to 1000 for production
   standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
   legacyHeaders: false, // Disable `X-RateLimit-*` headers
   message: {
@@ -30,7 +30,7 @@ const authLimiter = rateLimit({
 // Rate limit for organization creation (super admin only, but still protect)
 const orgCreationLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 1000, // TESTING: Increased from 10 to 1000 for testing
+  max: 10, // PRODUCTION: Reduced from 1000 to 10 for production
   standardHeaders: true,
   legacyHeaders: false,
   message: {

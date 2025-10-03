@@ -1,3 +1,6 @@
+// Initialize Sentry first (before any other imports)
+import './sentry';
+
 import React, { useState, useEffect, useRef } from 'react';
 import { SupabaseProvider, useSupabase } from './contexts/SupabaseContext';
 import Login from './components/Login';

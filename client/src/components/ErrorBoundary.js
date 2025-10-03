@@ -1,4 +1,5 @@
 import React from 'react';
+import * as Sentry from '@sentry/react';
 
 /**
  * Error Boundary Component
@@ -25,6 +26,15 @@ class ErrorBoundary extends React.Component {
     // Log error to console
     console.error('Error Boundary caught an error:', error, errorInfo);
 
+    // Send error to Sentry
+    Sentry.withScope((scope) => {
+      scope.setTag('errorBoundary', 'ErrorBoundary');
+      scope.setLevel('error');
+      scope.setContext('errorInfo', errorInfo);
+      scope.setContext('errorCount', this.state.errorCount + 1);
+      Sentry.captureException(error);
+    });
+
     // Update state with error details
     this.setState(prevState => ({
       error,
@@ -32,11 +42,15 @@ class ErrorBoundary extends React.Component {
       errorCount: prevState.errorCount + 1
     }));
 
-    // In production, you would log this to an error reporting service
-    // e.g., Sentry, LogRocket, etc.
-    if (process.env.NODE_ENV === 'production') {
-      // TODO: Send to error reporting service
-      // logErrorToService(error, errorInfo);
+    // If this is a recurring error, send with higher severity
+    if (this.state.errorCount > 1) {
+      Sentry.withScope((scope) => {
+        scope.setTag('errorBoundary', 'ErrorBoundary');
+        scope.setTag('recurring', 'true');
+        scope.setLevel('fatal');
+        scope.setContext('errorCount', this.state.errorCount + 1);
+        Sentry.captureException(error);
+      });
     }
   }
 

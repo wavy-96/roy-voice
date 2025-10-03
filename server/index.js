@@ -1,3 +1,6 @@
+// Initialize Sentry first (before any other imports)
+require('./sentry');
+
 const config = require('../config/env');
 const express = require('express');
 const cors = require('cors');
@@ -12,6 +15,7 @@ const organizationRoutes = require('./routes/organizations');
 const multiTenantMetricsRoutes = require('./routes/multi-tenant-metrics');
 const userRoutes = require('./routes/users');
 const agentRoutes = require('./routes/agents');
+const monitoringRoutes = require('./routes/monitoring');
 const cache = require('./services/cache');
 
 // Import rate limiters
@@ -82,6 +86,7 @@ app.use('/api/organizations', orgCreationLimiter, organizationRoutes); // Strict
 app.use('/api/multi-tenant', multiTenantMetricsRoutes);
 app.use('/api/users', userRoutes); // User management (super admin only)
 app.use('/api/agents', agentRoutes); // Agent management (super admin only)
+app.use('/api/monitoring', monitoringRoutes); // Monitoring and health endpoints
 app.use('/webhooks', webhookRoutes);
 
 // Serve static files from React build
