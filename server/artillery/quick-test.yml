@@ -1,0 +1,41 @@
+config:
+  target: "http://localhost:3002"
+  phases:
+    # Quick 30-second test
+    - duration: 30
+      arrivalRate: 10
+      name: "Quick smoke test"
+  
+  processor: "./processor.js"
+  
+  ensure:
+    maxErrorRate: 1
+    p95: 300
+    p99: 600
+
+scenarios:
+  - name: "Quick Health Check"
+    weight: 40
+    flow:
+      - get:
+          url: "/health"
+          expect:
+            - statusCode: 200
+
+  - name: "Quick Cache Check"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/cache/stats"
+          expect:
+            - statusCode: 200
+
+  - name: "Quick API Check"
+    weight: 30
+    flow:
+      - get:
+          url: "/api/multi-tenant/calls"
+          qs:
+            limit: 10
+          beforeRequest: "setAuthToken"
+

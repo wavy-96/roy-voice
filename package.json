@@ -1,0 +1,23 @@
+{
+  "name": "roy-voice",
+  "version": "1.0.0",
+  "description": "Multi-tenant white-label CRM for Retell AI voice agents",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "build": "echo 'No build step required'",
+    "test": "echo 'Tests not configured yet'",
+    "setup-env": "./scripts/setup-vercel-env.sh"
+  },
+  "keywords": ["retell", "crm", "multi-tenant", "voice-ai"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {
+    "dotenv": "^16.3.1"
+  }
+}
+
