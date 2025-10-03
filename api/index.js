@@ -53,7 +53,8 @@ const corsOptions = {
     // Allow specific domains
     const allowedOrigins = [
       'http://localhost:3000',
-      'https://localhost:3000'
+      'https://localhost:3000',
+      'https://client-omega-plum-94.vercel.app'
     ];
     
     if (allowedOrigins.includes(origin)) return callback(null, true);
