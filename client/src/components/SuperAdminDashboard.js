@@ -39,10 +39,15 @@ function SuperAdminDashboard() {
   const fetchOrganizations = async () => {
     try {
       setLoading(true);
+      console.log('🔍 Fetching organizations...');
       const headers = await getAuthHeaders();
+      console.log('📡 Making API call to:', `${API_BASE_URL}/api/organizations`);
       const response = await axios.get(`${API_BASE_URL}/api/organizations`, { headers });
+      console.log('✅ Organizations fetched:', response.data);
       setOrganizations(response.data);
     } catch (err) {
+      console.error('❌ Error fetching organizations:', err);
+      console.error('❌ Error response:', err.response?.data);
       setError(err.response?.data?.error || 'Failed to fetch organizations');
     } finally {
       setLoading(false);
