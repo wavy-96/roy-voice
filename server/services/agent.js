@@ -11,25 +11,26 @@ class AgentService {
   }
 
   /**
-   * Create a new agent (returns pending validation)
+   * Create a new agent with pre-generated webhook URL
    */
-  async createAgent(organizationId, agentData) {
+  async createAgentWithWebhook(organizationId, agentData, webhookUuid) {
     try {
       const { agent_id, name } = agentData;
 
-      if (!agent_id || !name) {
-        throw new Error('agent_id and name are required');
+      if (!agent_id || !name || !webhookUuid) {
+        throw new Error('agent_id, name, and webhook_uuid are required');
       }
 
-      // Call RPC function to create agent
-      const { data, error } = await this.supabase.rpc('create_agent', {
+      // Call RPC function to create agent with specific webhook UUID
+      const { data, error } = await this.supabase.rpc('create_agent_with_webhook', {
         p_organization_id: organizationId,
         p_agent_id: agent_id,
-        p_name: name
+        p_name: name,
+        p_webhook_uuid: webhookUuid
       });
 
       if (error) {
-        console.error('Error creating agent:', error);
+        console.error('Error creating agent with webhook:', error);
         throw new Error(`Failed to create agent: ${error.message}`);
       }
 

@@ -86,24 +86,30 @@ router.post('/organizations/:organizationId/agents',
   }
 );
 
-// Create agent with organization_id in body (alternative endpoint)
-router.post('/agents', 
+// Generate webhook URL for agent (before creation)
+router.post('/webhook-url', 
   authMiddleware, 
   requireRole('super_admin'), 
-  validateCreateAgent,
   async (req, res) => {
     try {
       const { organization_id } = req.body;
       
       if (!organization_id) {
-        return res.status(400).json({ error: 'Organization ID is required in request body' });
+        return res.status(400).json({ error: 'Organization ID is required' });
       }
 
-      const agent = await agentService.createAgent(organization_id, req.body);
+      // Generate a unique webhook URL
+      const webhookUuid = require('crypto').randomUUID();
+      const baseUrl = process.env.PUBLIC_BASE_URL || 'http://localhost:3002';
+      const webhookUrl = `${baseUrl}/webhooks/agent/${webhookUuid}`;
       
-      res.status(201).json(agent);
+      res.json({
+        webhook_url: webhookUrl,
+        webhook_uuid: webhookUuid,
+        organization_id: organization_id
+      });
     } catch (error) {
-      console.error('Error creating agent:', error);
+      console.error('Error generating webhook URL:', error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -192,6 +198,33 @@ router.delete('/agents/:agentId',
       res.json(result);
     } catch (error) {
       console.error('Error deleting agent:', error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+// Create agent with pre-generated webhook URL
+router.post('/agents-with-webhook', 
+  authMiddleware, 
+  requireRole('super_admin'), 
+  validateCreateAgent,
+  async (req, res) => {
+    try {
+      const { organization_id, webhook_uuid } = req.body;
+      
+      if (!organization_id) {
+        return res.status(400).json({ error: 'Organization ID is required in request body' });
+      }
+
+      if (!webhook_uuid) {
+        return res.status(400).json({ error: 'Webhook UUID is required in request body' });
+      }
+
+      const agent = await agentService.createAgentWithWebhook(organization_id, req.body, webhook_uuid);
+      
+      res.status(201).json(agent);
+    } catch (error) {
+      console.error('Error creating agent with webhook:', error);
       res.status(500).json({ error: error.message });
     }
   }

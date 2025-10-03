@@ -9,7 +9,11 @@ function AgentWizardModal({ organization, onClose, onSuccess }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [webhookUrl, setWebhookUrl] = useState('');
+  const [webhookData, setWebhookData] = useState({
+    webhook_url: '',
+    webhook_uuid: '',
+    organization_id: ''
+  });
   const [agentData, setAgentData] = useState({
     name: '',
     agent_id: '',
@@ -43,7 +47,7 @@ function AgentWizardModal({ organization, onClose, onSuccess }) {
 
         // Check if agent was validated
         const response = await axios.get(
-          `${API_BASE_URL}/api/agents/webhook-url/${encodeURIComponent(webhookUrl)}`,
+          `${API_BASE_URL}/api/agents/webhook-url/${encodeURIComponent(webhookData.webhook_url)}`,
           { headers }
         );
 
@@ -108,26 +112,55 @@ function AgentWizardModal({ organization, onClose, onSuccess }) {
         'ngrok-skip-browser-warning': 'true'
       };
 
-      // Create the agent
+      // Generate webhook URL
       const response = await axios.post(
-        `${API_BASE_URL}/api/agents`,
-        agentData,
+        `${API_BASE_URL}/api/agents/webhook-url`,
+        { organization_id: agentData.organization_id },
         { headers }
       );
 
-      setWebhookUrl(response.data.webhook_url);
+      setWebhookData(response.data);
       setCurrentStep(3);
     } catch (err) {
-      console.error('Error creating agent:', err);
-      setError(err.response?.data?.error || 'Failed to create agent');
+      console.error('Error generating webhook URL:', err);
+      setError(err.response?.data?.error || 'Failed to generate webhook URL');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleStep3Next = () => {
+  const handleStep3Next = async () => {
     if (validationStatus === 'success') {
-      setCurrentStep(4);
+      try {
+        setLoading(true);
+        setError(null);
+
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('No active session');
+
+        const headers = {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        };
+
+        // Create the agent with the validated webhook
+        await axios.post(
+          `${API_BASE_URL}/api/agents/agents-with-webhook`,
+          {
+            ...agentData,
+            webhook_uuid: webhookData.webhook_uuid
+          },
+          { headers }
+        );
+
+        setCurrentStep(4);
+      } catch (err) {
+        console.error('Error creating agent:', err);
+        setError(err.response?.data?.error || 'Failed to create agent');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -137,7 +170,7 @@ function AgentWizardModal({ organization, onClose, onSuccess }) {
   };
 
   const copyWebhookUrl = () => {
-    navigator.clipboard.writeText(webhookUrl);
+    navigator.clipboard.writeText(webhookData.webhook_url);
     // You could add a toast notification here
   };
 
@@ -209,7 +242,7 @@ function AgentWizardModal({ organization, onClose, onSuccess }) {
           <div className="flex">
             <input
               type="text"
-              value={webhookUrl}
+              value={webhookData.webhook_url}
               readOnly
               className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md bg-gray-50 text-gray-700"
             />
