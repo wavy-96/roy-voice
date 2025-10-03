@@ -3,11 +3,18 @@
   "buildCommand": "echo 'No build required for backend'",
   "outputDirectory": ".",
   "functions": {
+    "api/test.js": {
+      "maxDuration": 30
+    },
     "api/organizations.js": {
       "maxDuration": 30
     }
   },
   "routes": [
+    {
+      "src": "/api/test",
+      "dest": "/api/test.js"
+    },
     {
       "src": "/api/organizations",
       "dest": "/api/organizations.js"
