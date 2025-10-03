@@ -109,9 +109,6 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Console available at: http://localhost:${PORT}/console`);
-});
-
+// For Vercel serverless functions, we don't need to call app.listen()
+// The app is automatically started by Vercel
 module.exports = app;
