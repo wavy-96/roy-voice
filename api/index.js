@@ -24,11 +24,18 @@ function requireSuperAdmin(req) {
 }
 
 module.exports = async (req, res) => {
+  console.log('🚀 Serverless function executed!', {
+    method: req.method,
+    url: req.url,
+    headers: req.headers
+  });
+
   // Add CORS headers to all responses
   addCorsHeaders(res);
 
   // Handle preflight OPTIONS requests
   if (req.method === 'OPTIONS') {
+    console.log('📡 Handling OPTIONS request');
     res.status(200).end();
     return;
   }
