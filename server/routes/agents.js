@@ -98,9 +98,10 @@ router.post('/webhook-url',
         return res.status(400).json({ error: 'Organization ID is required' });
       }
 
-      // Generate a unique webhook URL
-      const webhookUuid = require('crypto').randomUUID();
+      // For now, use a simple static pattern that can be deployed
+      // TODO: Make this more sophisticated for production
       const baseUrl = process.env.PUBLIC_BASE_URL || 'http://localhost:3002';
+      const webhookUuid = `agent_${organization_id.replace(/-/g, '')}`;
       const webhookUrl = `${baseUrl}/webhooks/agent/${webhookUuid}`;
       
       res.json({
