@@ -24,15 +24,17 @@ class ApiErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     console.error('API Error Boundary caught an error:', error, errorInfo);
     
-    // Send error to Sentry
-    Sentry.withScope((scope) => {
-      scope.setTag('errorBoundary', 'ApiErrorBoundary');
-      scope.setLevel('error');
-      scope.setContext('errorInfo', errorInfo);
-      scope.setContext('retryCount', this.state.retryCount);
-      scope.setContext('errorType', this.getErrorType(error));
-      Sentry.captureException(error);
-    });
+    // Send error to Sentry (if configured)
+    if (process.env.REACT_APP_SENTRY_DSN) {
+      Sentry.withScope((scope) => {
+        scope.setTag('errorBoundary', 'ApiErrorBoundary');
+        scope.setLevel('error');
+        scope.setContext('errorInfo', errorInfo);
+        scope.setContext('retryCount', this.state.retryCount);
+        scope.setContext('errorType', this.getErrorType(error));
+        Sentry.captureException(error);
+      });
+    }
     
     this.setState({
       error,

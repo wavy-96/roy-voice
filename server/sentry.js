@@ -1,11 +1,12 @@
 const Sentry = require('@sentry/node');
 
-// Initialize Sentry for backend
-Sentry.init({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.NODE_ENV || 'development',
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // Lower sample rate in production
-  debug: process.env.NODE_ENV === 'development',
+// Initialize Sentry for backend (only if DSN is provided)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // Lower sample rate in production
+    debug: process.env.NODE_ENV === 'development',
   
   // Capture unhandled promise rejections
   integrations: [
@@ -43,7 +44,10 @@ Sentry.init({
     }
     return breadcrumb;
   },
-});
+  });
+} else {
+  console.log('🔧 Sentry not configured - error logging disabled');
+}
 
 // Export Sentry for use in other files
 module.exports = Sentry;

@@ -46,7 +46,9 @@ router.get('/metrics', async (req, res) => {
     res.json(metrics);
   } catch (error) {
     console.error('Error getting metrics:', error);
-    Sentry.captureException(error);
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
     res.status(500).json({ error: 'Failed to get metrics' });
   }
 });
@@ -61,7 +63,9 @@ router.get('/cache/stats', (req, res) => {
     });
   } catch (error) {
     console.error('Error getting cache stats:', error);
-    Sentry.captureException(error);
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
     res.status(500).json({ error: 'Failed to get cache stats' });
   }
 });
@@ -72,11 +76,18 @@ router.get('/test-error', (req, res) => {
     // This will trigger an error for testing
     throw new Error('Test error for Sentry integration');
   } catch (error) {
-    Sentry.captureException(error);
-    res.status(500).json({ 
-      error: 'Test error triggered',
-      message: 'This error was sent to Sentry for testing'
-    });
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(error);
+      res.status(500).json({ 
+        error: 'Test error triggered',
+        message: 'This error was sent to Sentry for testing'
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Test error triggered',
+        message: 'Sentry not configured - error logged to console only'
+      });
+    }
   }
 });
 
@@ -97,7 +108,9 @@ router.get('/performance-test', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    Sentry.captureException(error);
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(error);
+    }
     res.status(500).json({ error: 'Performance test failed' });
   }
 });

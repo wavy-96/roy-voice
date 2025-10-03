@@ -26,14 +26,16 @@ class ErrorBoundary extends React.Component {
     // Log error to console
     console.error('Error Boundary caught an error:', error, errorInfo);
 
-    // Send error to Sentry
-    Sentry.withScope((scope) => {
-      scope.setTag('errorBoundary', 'ErrorBoundary');
-      scope.setLevel('error');
-      scope.setContext('errorInfo', errorInfo);
-      scope.setContext('errorCount', this.state.errorCount + 1);
-      Sentry.captureException(error);
-    });
+    // Send error to Sentry (if configured)
+    if (process.env.REACT_APP_SENTRY_DSN) {
+      Sentry.withScope((scope) => {
+        scope.setTag('errorBoundary', 'ErrorBoundary');
+        scope.setLevel('error');
+        scope.setContext('errorInfo', errorInfo);
+        scope.setContext('errorCount', this.state.errorCount + 1);
+        Sentry.captureException(error);
+      });
+    }
 
     // Update state with error details
     this.setState(prevState => ({
@@ -43,7 +45,7 @@ class ErrorBoundary extends React.Component {
     }));
 
     // If this is a recurring error, send with higher severity
-    if (this.state.errorCount > 1) {
+    if (this.state.errorCount > 1 && process.env.REACT_APP_SENTRY_DSN) {
       Sentry.withScope((scope) => {
         scope.setTag('errorBoundary', 'ErrorBoundary');
         scope.setTag('recurring', 'true');

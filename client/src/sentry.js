@@ -1,11 +1,12 @@
 import * as Sentry from '@sentry/react';
 
-// Initialize Sentry for frontend
-Sentry.init({
-  dsn: process.env.REACT_APP_SENTRY_DSN,
-  environment: process.env.NODE_ENV || 'development',
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-  debug: process.env.NODE_ENV === 'development',
+// Initialize Sentry for frontend (only if DSN is provided)
+if (process.env.REACT_APP_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.REACT_APP_SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    debug: process.env.NODE_ENV === 'development',
   
   // Capture unhandled promise rejections
   integrations: [
@@ -46,7 +47,10 @@ Sentry.init({
     }
     return breadcrumb;
   },
-});
+  });
+} else {
+  console.log('🔧 Sentry not configured - error logging disabled');
+}
 
 // Export Sentry for use in other files
 export default Sentry;
