@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "buildCommand": "echo 'No build required for backend'",
+  "outputDirectory": ".",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}
