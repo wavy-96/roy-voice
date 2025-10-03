@@ -10,7 +10,7 @@ const organizationService = new OrganizationService();
 
 // Helper function to add CORS headers
 function addCorsHeaders(res) {
-  res.setHeader('Access-Control-Allow-Origin', 'https://client-b1j3c6ydc-raymonds-projects-587cb143.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://client-omega-plum-94.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, ngrok-skip-browser-warning, x-vercel-protection-bypass');
 }
